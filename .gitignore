@@ -1,0 +1,21 @@
+# VS Code specific
+.vscode/
+.history/
+
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Project specific
+data/*
+!data/.gitkeep
+
+# Config files
+.env

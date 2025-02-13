@@ -1,17 +1,30 @@
 # job_scrapy 🕷️
 
-A simple web scraper that uses Selenium to scrape restaurants from tripadvisor.
+Uses [scrapy](https://docs.scrapy.org/en/latest/index.html), [scrapy-selenium](https://github.com/clemfromspace/scrapy-selenium?tab=readme-ov-file), [dlt](https://dlthub.com) and [streamlit](https://docs.streamlit.io) to scrape job listings from the arbeitsagentur.de website.
+
+## 💡 project idea
+
+> Data Flow Diagram in form of an ELT-process.
+```mermaid
+flowchart TD;
+    A[arbeitsagentur.de] -- scrapy --> B[(mongodb)];
+    A -- dlt --> C[(mongodb)];
+    B -- dlt --> D[(postgreSQL)];
+    C -- dlt --> D;
+
+    D --> E[streamlit]
+```
 
 ## ⚙️ setup guide
 
 ** prerequisites**
 
-- install chrome browser
+- install chrome browser locally
 
 **🔧 setup**
 
 - install python3 and uv package manager
-- activate virtual environment using `uv activate`
+- activate virtual environment using `source .venv/bin/activate`
 - install dependencies using `uv sync`
 
 ** chromedriver setup**
@@ -171,3 +184,7 @@ class SeleniumMiddleware:
 
         self.driver.quit()
 ```
+
+## 🚀 running the scraper
+
+#r

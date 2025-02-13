@@ -1,50 +1,89 @@
 import scrapy
 from scrapy_selenium import SeleniumRequest
-
+import urllib.parse
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-RESULTS_SELECTOR = 'ul#ergebnisliste-liste-1 li'
-EXPAND_BUTTON_SELECTOR = 'button#ergebnisliste-ladeweitere-button'
+from utils.selector import close_cookie_banner
+from job_scrapy.items import JobScrapyItem
+
+COOKIE_BANNER_SELECTOR = 'bahf-cookie-disclaimer-dpl3'
+EXPAND_BUTTON_SELECTOR = 'ergebnisliste-ladeweitere-button'
+MODE_SWITCH_SELECTOR = 'ansicht-auswahl-tabbar-item-1'
+RESULT_LIST_SELECTOR = 'ergebnisliste-liste'
 
 class JobSpider(scrapy.Spider):
     name = "jobs"
     allowed_domains = ["arbeitsagentur.de"]
 
+    def __init__(self, query=None, location=None, *args, **kwargs):
+        super(JobSpider, self).__init__(*args, **kwargs)
+        assert query is not None, 'query parameter is required'
+        assert location is not None, 'location parameter is required'
+        self.query = urllib.parse.quote_plus(query)
+        self.location = urllib.parse.quote_plus(location)
+
     def start_requests(self):
-        urls = ["https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&was=Data%20Engineer%2Fin&wo=ulm&umkreis=100"]
+        urls = [f'https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&was={self.query}&wo={self.location}&umkreis=200']
         for url in urls:
             yield SeleniumRequest(
                 url=url, 
                 callback=self.parse,
-                wait_time=10,
-                wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, RESULTS_SELECTOR)),
+                wait_time=5,
+                wait_until=EC.presence_of_element_located((By.ID, f'{RESULT_LIST_SELECTOR}-1')),
+                screenshot=True,
             )
 
-    def parse(self, response):
-        # TODO: As long as the "Lade weitere" button is present, click it
-        # and wait for the results to load. Then, extract the job data.
-        # driver = response.meta['driver']
-        # while driver.find_elements(By.CSS_SELECTOR, EXPAND_BUTTON_SELECTOR):
-        #     driver.find_element(By.CSS_SELECTOR, EXPAND_BUTTON_SELECTOR).click()
-        #     WebDriverWait(driver, 10).until(
-        #         EC.presence_of_element_located((By.CSS_SELECTOR, RESULTS_SELECTOR))
-        #     )
+    def parse(self, response: scrapy.http.Response):
+        driver = response.meta['driver']
+        wait = WebDriverWait(driver, 6)
 
+        # Save a screenshot of the page
+        screenshot = response.meta['screenshot']
+        with open(f'data/screenshot-{self.name}.png', 'wb') as f:
+            f.write(screenshot)
 
-        jobs = response.css(RESULTS_SELECTOR)
+        # close the cookie banner (in shadow dom)
+        close_cookie_banner(driver, wait, COOKIE_BANNER_SELECTOR)
 
-        for job in jobs:
-            title = job.css('span.mitte-links-titel::text').get(default='').strip()
-            url = job.css('a::attr(href)').get()
-            employer = job.css('div.mitte-links-arbeitgeber::text').get(default='').strip()
-            location = job.css('span.mitte-links-ort::text').get(default='').strip()
-            published_at = job.css('span.unten-datum::text').get(default='').strip()
-            yield {
-                'name': title,
-                'url': url,
-                'employer': employer,
-                'location': location,
-                'published_at': published_at,
-            }
+        # Switch to the detailed view
+        wait.until(EC.visibility_of_element_located((By.ID, MODE_SWITCH_SELECTOR)))
+        switch_mode_button = driver.find_element(By.ID, MODE_SWITCH_SELECTOR)
+        if switch_mode_button:
+            switch_mode_button.click()
+        else:
+            print('>>> Switch mode button not found')
+
+        # TODO: Fix the loop to get all job results.
+        limit = 1
+        index = 1
+        while index <= limit:
+            # except for the first page, click the expand button to load more results if the button is present.
+            if (index != 1):
+                expand_button = driver.find_element(By.ID, EXPAND_BUTTON_SELECTOR)
+                # if there is an expand button, click it and wait for the current page to be present.
+                if expand_button:
+                    # Scroll the expand button into view
+                    driver.execute_script("arguments[0].scrollIntoView();", expand_button)
+                    wait.until(EC.visibility_of_element_located((By.ID, EXPAND_BUTTON_SELECTOR)))
+                    expand_button.click()
+                    wait.until(EC.visibility_of_element_located((By.ID, f'{RESULT_LIST_SELECTOR}-{index}')))
+
+            # get results container for current page. If no results container is found, break the loop.
+            results_container = response.css(f'#{RESULT_LIST_SELECTOR}-{index}')
+            if not results_container:
+                index = limit + 1
+                break
+            else:
+                index += 1
+
+            # get all jobs and create a JobScrapyItem for each job
+            job_containers = results_container.css('li')
+            for job_container in job_containers:
+                job_item = JobScrapyItem()
+                job_item['url'] = job_container.css('a').attrib['href'].strip()
+                job_item['title'] = job_container.css('.mitte-links .mitte-links-titel::text').get(default='').strip()
+                job_item['employer'] = job_container.css('.mitte-links .mitte-links-arbeitgeber::text').get(default='').strip()
+                job_item['location'] = job_container.css('.mitte-links .mitte-links-ort::text').get(default='').strip()
+                yield job_item

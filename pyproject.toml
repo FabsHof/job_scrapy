@@ -1,10 +1,11 @@
 [project]
-name = "restaurant-scrapy"
+name = "job_scrapy"
 version = "0.1.0"
-description = "Add your description here"
+description = "Uses scrapy & dlt to scrape job postings from arbeitsagentur.de"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "python-dotenv>=1.0.1",
     "scrapy>=2.12.0",
     "scrapy-selenium>=0.0.7",
     "selenium==4.10.0",

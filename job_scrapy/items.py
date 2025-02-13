@@ -6,7 +6,8 @@
 import scrapy
 
 
-class RestaurantScrapyItem(scrapy.Item):
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+class JobScrapyItem(scrapy.Item):
+    title = scrapy.Field()
+    url = scrapy.Field()
+    employer = scrapy.Field()
+    location = scrapy.Field()

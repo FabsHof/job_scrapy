@@ -24,6 +24,8 @@ def main():
     process.crawl(JobSpider, query="data engineer", location="ulm")
     process.start()
 
+    # TODO: Create an API call to get the data from the feed_uri
+
 
 if __name__ == "__main__":
     main()

@@ -33,6 +33,7 @@ class JobSpider(scrapy.Spider):
                 wait_time=5,
                 wait_until=EC.presence_of_element_located((By.ID, f'{RESULT_LIST_SELECTOR}-1')),
                 screenshot=True,
+                errback=self.log_error
             )
 
     def parse(self, response: scrapy.http.Response):
@@ -87,3 +88,6 @@ class JobSpider(scrapy.Spider):
                 job_item['employer'] = job_container.css('.mitte-links .mitte-links-arbeitgeber::text').get(default='').strip()
                 job_item['location'] = job_container.css('.mitte-links .mitte-links-ort::text').get(default='').strip()
                 yield job_item
+
+    def log_error(self, failure):
+        self.logger.error(repr(failure))

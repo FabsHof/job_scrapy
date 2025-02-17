@@ -74,9 +74,9 @@ DOWNLOADER_MIDDLEWARES = {
 
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    "job_scrapy.pipelines.RestaurantScrapyPipeline": 300,
-#}
+ITEM_PIPELINES = {
+   "job_scrapy.pipelines.JobScrapyPipeline": 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
@@ -102,3 +102,13 @@ DOWNLOADER_MIDDLEWARES = {
 # Set settings whose default value is deprecated to a future-proof value
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"
+
+# Set the mongo database settings
+MONGO_URI = os.getenv("MONGO_URI")
+MONGO_DATABASE = os.getenv("MONGO_DATABASE")
+MONGO_USER = os.getenv("MONGO_USER")
+MONGO_PASSWORD = os.getenv("MONGO_PASSWORD")
+
+# Logging settings
+LOG_LEVEL = "INFO"
+LOG_FILE = "logs/scrapy.log"

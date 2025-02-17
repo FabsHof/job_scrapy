@@ -187,4 +187,6 @@ class SeleniumMiddleware:
 
 ## 🚀 running the scraper
 
-#r
+- make sure the database is running: `docker-compose up`
+- make sure the virtual environment is activated: `source .venv/bin/activate`
+- run the scraper using `python main.py`

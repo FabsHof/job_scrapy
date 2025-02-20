@@ -17,15 +17,18 @@ class JobSpider(scrapy.Spider):
     name = "jobs"
     allowed_domains = ["arbeitsagentur.de"]
 
-    def __init__(self, query=None, location=None, *args, **kwargs):
+    def __init__(self, query=None, location=None, diameter=200, *args, **kwargs):
         super(JobSpider, self).__init__(*args, **kwargs)
         assert query is not None, 'query parameter is required'
         assert location is not None, 'location parameter is required'
+        assert diameter is not None, 'diameter parameter is required'
+        assert diameter in [0, 10, 15, 25, 50, 100, 200], 'diameter must be one of 0, 10, 15, 25, 50, 100, 200'
+        self.diameter = diameter
         self.query = urllib.parse.quote_plus(query)
         self.location = urllib.parse.quote_plus(location)
 
     def start_requests(self):
-        urls = [f'https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&was={self.query}&wo={self.location}&umkreis=200']
+        urls = [f'https://www.arbeitsagentur.de/jobsuche/suche?angebotsart=1&was={self.query}&wo={self.location}&umkreis={self.diameter}']
         for url in urls:
             yield SeleniumRequest(
                 url=url, 
@@ -87,6 +90,11 @@ class JobSpider(scrapy.Spider):
                 job_item['title'] = job_container.css('.mitte-links .mitte-links-titel::text').get(default='').strip()
                 job_item['employer'] = job_container.css('.mitte-links .mitte-links-arbeitgeber::text').get(default='').strip()
                 job_item['location'] = job_container.css('.mitte-links .mitte-links-ort::text').get(default='').strip()
+                job_item['search_params'] = {
+                    'query': self.query,
+                    'location': self.location,
+                    'diameter': self.diameter
+                }
                 yield job_item
 
     def log_error(self, failure):

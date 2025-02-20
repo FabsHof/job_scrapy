@@ -17,7 +17,6 @@ wheels/
 data/*
 !data/.gitkeep
 logs/*.log
-mongo-data/
 
 # Config files
 .env

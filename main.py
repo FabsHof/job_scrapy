@@ -6,6 +6,12 @@ import os
 from dotenv import load_dotenv
 
 def main():
+
+    query = 'data engineer'
+    location = 'ulm'
+    diameter = 200
+
+    # process setup
     settings = get_project_settings()
     load_dotenv()
 
@@ -20,9 +26,14 @@ def main():
         },
     })
 
+    # ELT pipeline for job details
     process = CrawlerProcess(settings)
-    process.crawl(JobSpider, query="data engineer", location="ulm")
+    process.crawl(JobSpider, query=query, location=location, diameter=diameter)
     process.start()
+
+    # TODO: Call job_details_pipeline to transform the job details and load them into the database
+
+
 
     # TODO: Create an API call to get the data from the feed_uri
 

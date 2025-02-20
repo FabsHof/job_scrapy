@@ -2,32 +2,61 @@
 
 Uses [scrapy](https://docs.scrapy.org/en/latest/index.html), [scrapy-selenium](https://github.com/clemfromspace/scrapy-selenium?tab=readme-ov-file), [dlt](https://dlthub.com) and [streamlit](https://docs.streamlit.io) to scrape job listings from the arbeitsagentur.de website.
 
-## 💡 project idea
+```mermaid
+flowchart LR;
+    A[arbeitsagentur.de] --> B[data pipeline];
+    B --> C[(db)];
+    C --> D[streamlit];
 
-> Data Flow Diagram in form of an ELT-process.
+```
+## 📊 data
+
+This is a very basic data documentation, showing data sources, data flow and data model.
+
+### 🌊 data flow
+
+The data flow includes a simple ELT-process on the righthand side and basic 
+
 ```mermaid
 flowchart TD;
     A[arbeitsagentur.de] -- scrapy --> B[(mongodb)];
-    A -- dlt --> C[(mongodb)];
-    B -- dlt --> D[(postgreSQL)];
-    C -- dlt --> D;
+    C[rest.arbeitsagentur.de] -- dlt --> D[(postgreSQL)];
+    B -- pipeline --> D;
+    D --> E[REST API];
+```
 
-    D --> E[streamlit]
+### 🧩 data schema
+
+The data schema is a simple ER-diagram, showing the relationship between the `JOB_DETAILS` and `JOB` tables (PostgreSQL DB).
+
+```mermaid
+erDiagram
+    JOB_DETAILS ||--|| JOB : has
+    JOB_DETAILS {
+        string job_id
+        string details_url
+    }
+    JOB {
+        string id
+        string title
+        string company
+        string city
+        string zip
+        lat_lon_struct coordinates
+        string ext_url
+        date published_at
+        date start_date
+    }
 ```
 
 ## ⚙️ setup guide
 
-** prerequisites**
-
-- install chrome browser locally
-
-**🔧 setup**
-
-- install python3 and uv package manager
+- install `chrome browser` locally
+- install `python3` and `uv` package manager (MacOS: e.g. via Homebrew)
 - activate virtual environment using `source .venv/bin/activate`
 - install dependencies using `uv sync`
 
-** chromedriver setup**
+**chromedriver setup**
 
 - locate the `scrapy-selenium` folder in the virtual environment
 - edit `middlewares.py` to include the following content:

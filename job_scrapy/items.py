@@ -12,3 +12,4 @@ class JobScrapyItem(scrapy.Item):
     url = scrapy.Field()
     employer = scrapy.Field()
     location = scrapy.Field()
+    search_params = scrapy.Field()

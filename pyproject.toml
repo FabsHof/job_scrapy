@@ -5,6 +5,12 @@ description = "Uses scrapy & dlt to scrape job postings from arbeitsagentur.de"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "logging>=0.4.9.6",
+    "pandas>=2.2.3",
+    "psycopg>=3.2.4",
+    "psycopg-binary>=3.2.4",
+    "psycopg-pool>=3.2.4",
+    "psycopgbinary>=0.0.1",
     "pymongo>=4.11.1",
     "python-dotenv>=1.0.1",
     "scrapy>=2.12.0",

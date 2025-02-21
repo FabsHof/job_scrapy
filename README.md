@@ -33,8 +33,10 @@ The data schema is a simple ER-diagram, showing the relationship between the `JO
 erDiagram
     JOB_DETAILS ||--|| JOB : has
     JOB_DETAILS {
+        string id
         string job_id
         string details_url
+        search_params_struct search_params
     }
     JOB {
         string id
@@ -46,6 +48,8 @@ erDiagram
         string ext_url
         date published_at
         date start_date
+        search_params_struct search_params
+        string description
     }
 ```
 
